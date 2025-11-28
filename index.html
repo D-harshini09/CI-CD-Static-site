@@ -1,0 +1,40 @@
+name: CI/CD for Static Site
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v3
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '20'
+
+    - name: Install html-validate and linkinator
+      run: |
+        npm install -g html-validate linkinator
+
+    - name: HTML Validation
+      continue-on-error: true
+      run: html-validate "index.html"
+
+    - name: Link Checking
+      continue-on-error: true
+      run: linkinator "index.html" --ignore-external
+
+    - name: Build Preview
+      run: echo "No build required for static site"
+
+    - name: Deploy to GitHub Pages
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./
